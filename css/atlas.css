@@ -60,7 +60,7 @@ p { margin: 0 0 1em; }
 /* ---------- Barra superior + navegación de módulos ---------- */
 .barra { position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,.94); backdrop-filter: blur(8px); border-bottom: 1px solid var(--borde); }
 .barra .contenedor { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 6px; }
-.barra .logo img { height: 56px; width: auto; }
+.barra .logo img { height: 40px; width: auto; }
 .modulos { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
 .modulos::-webkit-scrollbar { display: none; }
 .modulos a { display: flex; align-items: center; gap: 8px; white-space: nowrap; text-decoration: none; color: var(--azul-marino); font-weight: 500; font-size: .92rem; padding: 10px 12px; border-radius: 12px; min-height: 44px; }
@@ -225,7 +225,7 @@ footer .aparte { margin-top: 20px; font-size: .8rem; opacity: .9; flex-basis: 10
   .rejilla.c3, .rejilla.c2, .simulador { grid-template-columns: 1fr; }
   .flujo .flecha { display: none; }
   .barra .contenedor { flex-direction: column; align-items: stretch; gap: 0; }
-  .barra .logo img { height: 44px; }
+  .barra .logo img { height: 34px; }
 }
 @media (max-width: 620px) {
   .rejilla.c4, .rejilla.c5, .kpis { grid-template-columns: 1fr; }
