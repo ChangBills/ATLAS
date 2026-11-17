@@ -2,6 +2,7 @@
    Datos numéricos: datos/atlas-datos.json (validado en la Etapa 2).
    Textos conceptuales: física de conversión de energía (conocimiento estable). */
 (function () {
+  const TX = (c) => (window.AtlasTema ? window.AtlasTema.c(c) : c);
   const css = getComputedStyle(document.documentElement);
   const v = (n) => css.getPropertyValue(n).trim();
   const fmt = (x, d = 0) => Number(x).toLocaleString('es-MX', { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -357,7 +358,7 @@
       options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y',
         scales: { x: { grid: { color: '#EEF3FB' }, border: { display: false }, ticks: { callback: (x) => x + ' %' } }, y: { grid: { display: false }, border: { display: false }, ticks: { color: '#101828', font: { size: 11 } } } },
         plugins: { legend: { display: false }, tooltip: { ...TIP, callbacks: { label: (x) => { const r = ranking[x.dataIndex]; return ` ${fmt(r.p, 1)} % · ${fmt(r.v)} GWh · ${NOM[r.r]}${r.k === 'Cogeneración eficiente' ? ' (limpia por ley)' : ''}`; } } } } },
-      plugins: [{ id: 'etiquetas', afterDatasetsDraw(ch) { const ctx = ch.ctx; ctx.save(); ctx.font = '600 11px Inter, sans-serif'; ctx.fillStyle = '#101828'; ctx.textBaseline = 'middle';
+      plugins: [{ id: 'etiquetas', afterDatasetsDraw(ch) { const ctx = ch.ctx; ctx.save(); ctx.font = '600 11px Inter, sans-serif'; ctx.fillStyle = TX('#101828'); ctx.textBaseline = 'middle';
         ch.getDatasetMeta(0).data.forEach((b, i) => ctx.fillText(fmt(ranking[i].p, 1) + ' %', b.x + 6, b.y)); ctx.restore(); } }] });
 
     comparador(d, g, cap, i24, tot[2]);
@@ -397,7 +398,7 @@
         scales: { x: { beginAtZero: true, grid: { color: '#EEF3FB' }, border: { display: false }, title: { display: true, text: 'g CO₂eq/kWh (mediana)' } }, y: { grid: { display: false }, border: { display: false }, ticks: { color: '#101828' } } },
         plugins: { legend: { display: false }, tooltip: { ...TIP, callbacks: { label: (x) => { const r = emis._r[x.dataIndex]; const e = r.ipcc && E[r.ipcc]; const s = e && (modo === 'vida' ? e[1] : e[0]); return s ? ` Mediana ${fmt(s[1], 1)} · rango ${fmt(s[0], 1)}–${fmt(s[2], 0)} g CO₂eq/kWh` : ' Dato no disponible'; } } } } },
       plugins: [{ id: 'nd', afterDatasetsDraw(ch) { const ctx = ch.ctx; ctx.save(); ctx.font = '600 11px Inter, sans-serif'; ctx.textBaseline = 'middle';
-        ch.getDatasetMeta(0).data.forEach((b, i) => { const val = ch.data.datasets[0].data[i]; ctx.fillStyle = val == null ? '#5B6B85' : '#101828'; ctx.fillText(val == null ? 'Dato no disponible' : fmt(val, val < 10 ? 1 : 0), (val == null ? ch.scales.x.left : b.x) + 6, b.y); }); ctx.restore(); } }] });
+        ch.getDatasetMeta(0).data.forEach((b, i) => { const val = ch.data.datasets[0].data[i]; ctx.fillStyle = val == null ? TX('#5B6B85') : TX('#101828'); ctx.fillText(val == null ? 'Dato no disponible' : fmt(val, val < 10 ? 1 : 0), (val == null ? ch.scales.x.left : b.x) + 6, b.y); }); ctx.restore(); } }] });
     document.querySelectorAll('[data-emis]').forEach((b) => b.addEventListener('click', () => {
       modo = b.dataset.emis; document.querySelectorAll('[data-emis]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); pinta(); }));
     function pinta() {

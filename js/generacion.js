@@ -2,6 +2,7 @@
    Datos: datos/atlas-datos.json (validado en la Etapa 2). Ningún valor se escribe a mano aquí
    salvo textos de definición; las cifras se leen del JSON o se calculan con él. */
 (function () {
+  const TX = (c) => (window.AtlasTema ? window.AtlasTema.c(c) : c);
   const css = getComputedStyle(document.documentElement);
   const v = (n) => css.getPropertyValue(n).trim();
   const fmt = (x, d = 0) => Number(x).toLocaleString('es-MX', { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -228,7 +229,7 @@
         plugins: { legend: { display: false }, tooltip: { ...TIP, callbacks: { label: (c) => (c.raw == null ? ` ${c.dataset.label}: Dato no disponible` : PCT() ? ` ${c.dataset.label}: ${sg(c.raw)}${fmt(c.raw, 1)} % contra el año anterior` : ` ${c.dataset.label}: ${fmt(c.raw)} GWh`) } } } } });
     $('#tabla-anual').innerHTML = `<table><thead><tr><th>Año</th><th class="n">Nacional, neta (GWh)</th><th class="n">CFE, bruta (GWh)</th></tr></thead><tbody>${anios.map((a) => `<tr><td>${a}</td><td class="n">${fmt(nacional(a).total)}</td><td class="n">${fmt(cfe(a).total)}</td></tr>`).join('')}</tbody></table>`;
 
-    const etiquetas = (fn) => ({ id: 'et', afterDatasetsDraw(ch) { const ctx = ch.ctx; ctx.save(); ctx.font = '600 11px Inter, sans-serif'; ctx.fillStyle = '#101828'; ctx.textBaseline = 'middle'; fn(ch, ctx); ctx.restore(); } });
+    const etiquetas = (fn) => ({ id: 'et', afterDatasetsDraw(ch) { const ctx = ch.ctx; ctx.save(); ctx.font = '600 11px Inter, sans-serif'; ctx.fillStyle = TX('#101828'); ctx.textBaseline = 'middle'; fn(ch, ctx); ctx.restore(); } });
     charts.var = new Chart($('#g-var'), { type: 'bar', data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderRadius: 4, borderSkipped: false, maxBarThickness: 20 }] },
       options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', scales: { x: { grid: { color: (c) => (c.tick.value === 0 ? '#5B6B85' : '#EEF3FB') }, border: { display: false }, ticks: { maxTicksLimit: 5, maxRotation: 0, callback: (x) => (PCT() ? x + ' %' : fmt(x / 1000) + ' TWh') } }, y: { grid: { display: false }, border: { display: false }, ticks: { color: '#101828', font: { size: 11 } } } },
         plugins: { legend: { display: false }, tooltip: { ...TIP, callbacks: { label: (c) => { const r = charts.var._d[c.dataIndex]; return PCT() ? ` ${sg(c.raw)}${fmt(c.raw, 1)} % · ${fmt(r.a)} → ${fmt(r.b)} GWh` : ` ${sg(c.raw)}${fmt(c.raw)} GWh · ${fmt(r.a)} → ${fmt(r.b)} GWh (${sg(r.v)}${fmt(r.v, 1)} %)`; } } } } },
@@ -239,7 +240,7 @@
         layout: { padding: { right: 24 } },
         plugins: { legend: { display: false }, tooltip: { ...TIP, callbacks: { label: (c) => { const r = charts.part._d[c.dataIndex]; return ` ${fmt(r.v)} GWh · ${fmt(r.p, 1)} %`; } } } } },
       plugins: [etiquetas((ch, ctx) => ch.getDatasetMeta(0).data.forEach((b, i) => { const x = ch.data.datasets[0].data[i]; ctx.textAlign = 'left'; const t = PCT() ? fmt(x, 1) + ' %' : fmt(x) + (ANGOSTO() ? '' : ' GWh'), w = ctx.measureText(t).width;
-        if (b.x + 6 + w > ch.width - 2) { ctx.textAlign = 'right'; ctx.fillStyle = '#fff'; ctx.fillText(t, b.x - 6, b.y); ctx.fillStyle = '#101828'; } else ctx.fillText(t, b.x + 6, b.y); }))] });
+        if (b.x + 6 + w > ch.width - 2) { ctx.textAlign = 'right'; ctx.fillStyle = '#fff'; ctx.fillText(t, b.x - 6, b.y); ctx.fillStyle = TX('#101828'); } else ctx.fillText(t, b.x + 6, b.y); }))] });
 
     charts.limp = new Chart($('#g-limp'), { type: 'bar', data: { labels: ['Nacional 2022', 'Nacional 2023', 'Nacional 2024', 'CFE 2022', 'CFE 2023', 'CFE 2024'], datasets: [
       { label: 'No limpia (fósil)', data: [], backgroundColor: [], borderColor: '#fff', borderWidth: { right: 2 }, borderSkipped: false, maxBarThickness: 34 },
@@ -256,7 +257,7 @@
         scales: { x: { grid: { display: false }, border: { display: false }, ticks: { maxTicksLimit: 8 } }, y: { beginAtZero: true, grid: { color: '#EEF3FB' }, border: { display: false }, ticks: { callback: (x) => (PCT() ? x + ' %' : fmt(x / 1000) + ' TWh') } } },
         plugins: { legend: { display: false }, tooltip: { ...TIP, callbacks: { label: (c) => { const i = c.dataIndex, g = P.datos[c.datasetIndex ? 'Térmica convencional' : 'Ciclo combinado'][i]; return ` ${c.dataset.label}: ${fmt(g)} GWh · ${fmt((100 * g) / P.total[i], 1)} % del total`; } } } } },
       plugins: [{ id: 'fin', afterDatasetsDraw(ch) { const ctx = ch.ctx; ctx.save(); ctx.font = '600 12px Inter, sans-serif'; ctx.textBaseline = 'middle';
-        ch.data.datasets.forEach((ds, k) => { const p = ch.getDatasetMeta(k).data.at(-1); ctx.fillStyle = '#101828'; ctx.fillText(k ? 'Vapor convencional' : 'Ciclo combinado', p.x + 10, p.y); });
+        ch.data.datasets.forEach((ds, k) => { const p = ch.getDatasetMeta(k).data.at(-1); ctx.fillStyle = TX('#101828'); ctx.fillText(k ? 'Vapor convencional' : 'Ciclo combinado', p.x + 10, p.y); });
         const i = hist.indexOf(String(st.anio)), x = ch.scales.x.getPixelForValue(i); ctx.strokeStyle = '#FFC22E'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(x, ch.chartArea.top); ctx.lineTo(x, ch.chartArea.bottom); ctx.stroke(); ctx.restore(); } }] });
   }
 

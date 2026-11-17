@@ -1,6 +1,7 @@
 /* Atlas Eléctrico · Módulo 4 · ¿Sabías que?
    Datos: datos/sabias.json (scripts/construir_sabias.py). Ninguna cifra se escribe a mano aquí. */
 (function () {
+  const TX = (c) => (window.AtlasTema ? window.AtlasTema.c(c) : c);
   const fmt = (x, d = 0) => Number(x).toLocaleString('es-MX', { minimumFractionDigits: d, maximumFractionDigits: d });
   const dec = (x) => { if (Number.isInteger(x)) return 0; const t = String(+x.toFixed(2)).split('.')[1]; return t ? t.length : 0; };
   const $ = (s, r = document) => r.querySelector(s);
@@ -147,7 +148,7 @@
     const tri = r.obj ? `<div class="tri-ref"><div><span class="tri-et obj">Objetivo declarado</span><p>${r.obj.t}</p><small>${fl(r.obj.f)}</small></div><div><span class="tri-et ley">Cambio legal</span><p>${r.ley.t}</p><small>${fl(r.ley.f)}</small></div><div><span class="tri-et res">Resultado observado</span><p>${r.texto}</p></div></div>` : `<p>${r.texto}</p>`;
     $('#rep').innerHTML = `<h3>${rep + 1}. ${r.n}</h3>${tri}${r.viz === 'mercado' ? `<div class="hechos-mem">${r.roles.map((x) => `<div class="panel"><h4>${x.q}</h4><p>${x.t}</p><p class="fuente">${fuente(x.f)}</p></div>`).join('')}</div>` : '<div class="lienzo" style="height:300px"><canvas id="g-rep" role="img" aria-label="Gráfica de la repercusión"></canvas></div>'}${extra}<p class="fuente"><strong>Fuentes:</strong> ${r.f.map(fuente).join(' · ')}</p>`;
     const g = $('#g-rep'), base = { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } }, tooltip: { ...TIP } } };
-    const marca2013 = { id: 'm13', afterDraw: (c) => { const x = c.scales.x; if (!x || r.viz === 'participacion' || r.viz === 'tarifas') return; const px = x.getPixelForValue(x.getLabels ? x.getLabels().indexOf(2013) : 2013); if (!(px > 0)) return; const { top, bottom } = c.chartArea, k = c.ctx; k.save(); k.strokeStyle = '#F5A300'; k.setLineDash([5, 4]); k.lineWidth = 2; k.beginPath(); k.moveTo(px, top); k.lineTo(px, bottom); k.stroke(); k.fillStyle = '#0B2A5B'; k.font = '600 11px Inter'; k.fillText('Reforma 2013', px + 4, top + 12); k.restore(); } };
+    const marca2013 = { id: 'm13', afterDraw: (c) => { const x = c.scales.x; if (!x || r.viz === 'participacion' || r.viz === 'tarifas') return; const px = x.getPixelForValue(x.getLabels ? x.getLabels().indexOf(2013) : 2013); if (!(px > 0)) return; const { top, bottom } = c.chartArea, k = c.ctx; k.save(); k.strokeStyle = '#F5A300'; k.setLineDash([5, 4]); k.lineWidth = 2; k.beginPath(); k.moveTo(px, top); k.lineTo(px, bottom); k.stroke(); k.fillStyle = TX('#0B2A5B'); k.font = '600 11px Inter'; k.fillText('Reforma 2013', px + 4, top + 12); k.restore(); } };
     if (r.viz === 'participacion') {
       const d = [...r.datos].sort((a, b) => a.anio - b.anio);
       charts.rep = new Chart(g, { type: 'bar', data: { labels: d.map((x) => `${x.anio} · ${x.n}`), datasets: [{ data: d.map((x) => x.v), backgroundColor: d.map((x) => (x.anio >= 2025 ? '#1baf7a' : '#eb6834')), borderRadius: 6 }] },

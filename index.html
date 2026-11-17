@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/atlas.css?v=20261117">
+  <link rel="stylesheet" href="css/atlas.css?v=20261118">
   <script>(function(){try{var t=localStorage.getItem("atlas-tema");if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"oscuro":"claro";document.documentElement.dataset.tema=t;}catch(e){}})();</script>
 </head>
 <body>
@@ -98,11 +98,20 @@
       <h2>De la luz a la electricidad: simulador de celda solar</h2>
       <p class="intro">Medimos un panel <strong>Epcom PRO-10012 de 100 W</strong> al aire libre, con luz de sol, en tres posiciones. En cada una tomamos dos lecturas con un multímetro: el voltaje y la corriente. Abajo están esas mediciones y un simulador para ver cómo cambia lo que entrega el panel cuando cambia el ángulo de la luz.</p>
 
+      <nav class="indice-solar" aria-label="Partes del simulador">
+        <a href="#pos-cards"><span>1</span>Mediciones</a>
+        <a href="#simulador"><span>2</span>Lo que entrega el panel</a>
+        <a href="#controles"><span>3</span>Controles</a>
+        <a href="#foto"><span>4</span>De la luz a la electricidad</a>
+        <a href="#curva-iv"><span>5</span>Curva I‑V</a>
+        <a href="#supuestos"><span>6</span>Supuestos</a>
+      </nav>
+
       <div class="rejilla c3 pos-rejilla" id="pos-cards" aria-live="polite"></div>
 
       <div class="aviso" id="aviso-corriente" style="margin-top:20px" hidden></div>
 
-      <article class="panel sol-vista" style="margin-top:28px" aria-labelledby="t-res-solar">
+      <article class="panel sol-vista" id="simulador" style="margin-top:28px" aria-labelledby="t-res-solar">
         <h3 id="t-res-solar">Lo que ve y entrega el panel</h3>
         <div class="sol-vista-rej">
           <div class="sol-lecturas">
@@ -121,7 +130,7 @@
               <div class="kpi-mini"><span class="k">Corriente de cortocircuito, Isc</span><b id="k-isc"></b></div>
             </div>
           </div>
-          <figure class="solar-fig">
+          <figure class="solar-fig" data-tema-propio>
             <svg id="solar-svg" data-anim viewBox="0 0 640 330" role="img" aria-label="Ilustración del panel solar y el sol">
               <defs>
                 <linearGradient id="sv-haz-g" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1" y2="1"><stop offset="0" class="sv-haz-a"/><stop offset="1" class="sv-haz-b"/></linearGradient>
@@ -164,7 +173,7 @@
         <p class="desc" id="o-aviso" role="status" style="margin:0"></p>
       </article>
 
-      <div class="panel sol-ctrl" style="margin-top:20px" aria-labelledby="t-ctrl-solar">
+      <div class="panel sol-ctrl" id="controles" style="margin-top:20px" aria-labelledby="t-ctrl-solar">
         <h3 id="t-ctrl-solar">Controles</h3>
         <div class="placa-chips" id="placa-chips" aria-label="Datos de la placa que usa el simulador"></div>
         <div class="sol-ctrl-rej">
@@ -223,33 +232,37 @@
       <article class="panel foto" id="foto" style="margin-top:20px" aria-labelledby="t-foto">
         <div class="cab"><div><h3 id="t-foto">¿Cómo se convierte la luz en electricidad?</h3>
           <p class="desc">Dentro de cada celda ocurre el efecto fotovoltaico, que nace del efecto fotoeléctrico: un fotón (una partícula de luz) con suficiente energía le arranca un electrón a un átomo. Esta animación usa los mismos controles de arriba: si cambias el ángulo, la intensidad o la carga, cambia lo que ves.</p></div></div>
-        <div class="foto-ctrl">
-          <div class="foto-c foto-c-luz">
-            <div class="foto-c-cab"><span class="rot" id="r-luz">Tipo de luz</span><output id="o-nm" class="foto-out" for="s-nm"></output></div>
-            <div class="espectro">
-              <input type="range" id="s-nm" min="380" max="1500" step="5" value="550" aria-labelledby="r-luz" aria-describedby="o-nm">
-              <span class="esp-umbral" id="esp-umbral" aria-hidden="true"><i></i><b></b></span>
+        <div class="foto-escena">
+          <div class="foto-lienzo"><canvas id="c-foto" role="img" aria-label="Animación de una celda solar: llegan fotones a la celda; los fotones con energía suficiente liberan electrones; la unión p-n manda los electrones a la capa n y los huecos a la capa p; los electrones salen por el contacto frontal, pasan por la carga y regresan por el contacto trasero."></canvas></div>
+          <div class="foto-panel" aria-label="Luz que llega a la celda">
+            <div class="foto-c foto-c-luz">
+              <div class="foto-c-cab"><span class="rot" id="r-luz">Tipo de luz</span><output id="o-nm" class="foto-out" for="s-nm"></output></div>
+              <div class="espectro">
+                <input type="range" id="s-nm" min="380" max="1500" step="5" value="550" aria-labelledby="r-luz" aria-describedby="o-nm">
+                <span class="esp-umbral" id="esp-umbral" aria-hidden="true"><i></i><b></b></span>
+              </div>
+              <div class="esp-escala" aria-hidden="true"><span>380 nm</span><span>Luz visible</span><span>Infrarrojo</span><span>1500 nm</span></div>
             </div>
-            <div class="esp-escala" aria-hidden="true"><span>380 nm</span><span>Luz visible</span><span>Infrarrojo</span><span>1500 nm</span></div>
-            <div class="segmentado sol-seg luz-seg" role="group" aria-labelledby="r-luz" id="seg-luz">
-              <button type="button" data-luz="sol" aria-pressed="true">Sol (todos los colores)</button>
-              <button type="button" data-luz="azul" aria-pressed="false">Azul · 450 nm</button>
-              <button type="button" data-luz="roja" aria-pressed="false">Roja · 650 nm</button>
-              <button type="button" data-luz="ir" aria-pressed="false">Infrarroja · 1400 nm</button>
+            <div class="foto-c foto-c-int">
+              <div class="foto-c-cab"><label for="s-g2" id="r-int">Intensidad de la luz, G</label><output id="o-g2" class="foto-out" for="s-g2"></output></div>
+              <input type="range" id="s-g2" class="rango-sol" min="100" max="1000" step="10" value="1000">
             </div>
-          </div>
-          <div class="foto-c foto-c-int">
-            <div class="foto-c-cab"><label for="s-g2" id="r-int">Intensidad de la luz, G</label><output id="o-g2" class="foto-out" for="s-g2"></output></div>
-            <input type="range" id="s-g2" class="rango-sol" min="100" max="1000" step="10" value="1000">
-            <div class="llega">
-              <div class="llega-cab"><span>Luz que llega a la celda <span class="sello calculo">Cálculo</span></span><b id="o-llega"></b></div>
-              <div class="llega-barra" aria-hidden="true"><i id="o-llega-bar"></i></div>
-              <p class="llega-nota">Es la misma luz directa G de los controles de arriba, ya con el ángulo y la luz difusa.</p>
-            </div>
-            <button type="button" class="btn-foto" id="foto-play" aria-pressed="true">⏸ Pausar</button>
           </div>
         </div>
-        <div class="foto-lienzo"><canvas id="c-foto" role="img" aria-label="Animación de una celda solar: fotones que llegan, electrones liberados que suben a la capa n y viajan por ella hasta el contacto frontal, huecos que bajan a la capa p, y los electrones que recorren el cable externo a través de la carga y regresan por el contacto trasero."></canvas></div>
+        <div class="foto-barra">
+          <div class="segmentado sol-seg luz-seg" role="group" aria-labelledby="r-luz" id="seg-luz">
+            <button type="button" data-luz="sol" aria-pressed="true">Sol (todos los colores)</button>
+            <button type="button" data-luz="azul" aria-pressed="false">Azul · 450 nm</button>
+            <button type="button" data-luz="roja" aria-pressed="false">Roja · 650 nm</button>
+            <button type="button" data-luz="ir" aria-pressed="false">Infrarroja · 1400 nm</button>
+          </div>
+          <div class="llega">
+            <div class="llega-cab"><span>Luz que llega a la celda <span class="sello calculo">Cálculo</span></span><b id="o-llega"></b></div>
+            <div class="llega-barra" aria-hidden="true"><i id="o-llega-bar"></i></div>
+            <p class="llega-nota">Es la misma luz directa G de los controles de arriba, ya con el ángulo y la luz difusa.</p>
+          </div>
+          <button type="button" class="btn-foto" id="foto-play" aria-pressed="true">⏸ Pausar</button>
+        </div>
         <ul class="foto-leyenda" aria-label="Leyenda de la animación">
           <li><i class="lg lg-ph"></i> Fotón (luz)</li>
           <li><i class="lg lg-e">−</i> Electrón</li>
@@ -276,7 +289,7 @@
         <p class="fuente"><span class="sello calculo">Cálculo</span> E = h·f = h·c/λ, con E[eV] = 1239.84 / λ[nm] y f = c/λ. El 1.12 eV es el valor de referencia del silicio; el material exacto de tu panel es <span class="sello nd">Dato no disponible</span>, por eso el silicio se usa como ejemplo. La animación es didáctica: no está a escala ni cuenta cada fotón real.</p>
       </article>
 
-      <article class="panel" style="margin-top:20px" aria-labelledby="t-iv">
+      <article class="panel" id="curva-iv" data-tema-propio style="margin-top:20px" aria-labelledby="t-iv">
         <div class="cab"><div><h3 id="t-iv">Curva corriente-voltaje y potencia</h3>
           <p class="desc">La curva azul muestra qué corriente puede dar el panel a cada voltaje. La curva ámbar es la potencia. El punto amarillo es lo que pasa con tu carga: donde la línea gris de la carga cruza la curva azul.</p></div></div>
         <ul class="leyenda">
@@ -289,7 +302,7 @@
         <p class="fuente"><span class="sello calculo">Cálculo</span> Modelo de diodo simplificado ajustado con Voc, Isc, Vmp e Imp de la placa: I = g·Isc − I₀·(e<sup>V/a</sup> − 1). La luz solo escala la corriente; el voltaje de circuito abierto cambia con el logaritmo de la luz.</p>
       </article>
 
-      <article class="panel" style="margin-top:20px">
+      <article class="panel" id="supuestos" style="margin-top:20px">
         <h3>Supuestos y limitaciones del modelo</h3>
         <ul class="supuestos">
           <li><strong>Temperatura fija en 25 °C.</strong> Un panel caliente al sol da menos voltaje que el modelo. Los coeficientes de temperatura de tu panel son <span class="sello nd">Dato no disponible</span>.</li>
@@ -336,8 +349,8 @@
 <script>(function(){var n=document.querySelector(".modulos"),a=n&&n.querySelector("[aria-current]");if(n&&a&&n.scrollWidth>n.clientWidth){n.scrollLeft=a.offsetLeft-(n.clientWidth-a.offsetWidth)/2;}})();</script>
 <script>(function(){var b=document.querySelector(".arriba");if(!b)return;function f(){b.classList.toggle("visible",scrollY>innerHeight*0.8);}addEventListener("scroll",f,{passive:true});f();})();</script>
 <script src="js/vendor/chart.umd.min.js"></script>
-<script src="js/tema.js?v=20261117"></script>
-<script src="js/celda-anim.js?v=20261117"></script>
-<script src="js/solar.js?v=20261117"></script>
+<script src="js/tema.js?v=20261118"></script>
+<script src="js/celda-anim.js?v=20261118"></script>
+<script src="js/solar.js?v=20261118"></script>
 </body>
 </html>
