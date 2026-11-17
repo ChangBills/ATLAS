@@ -16,7 +16,7 @@
   let M = null;            // parámetros del modelo ajustado
   let chart = null;
   let pendiente = false;
-  const S = { beta: 30, h: 60, G: 1000, d: 0, op: 'mpp', rIdx: 50, pos: 'optimo', luz: 'sol' };
+  const S = { beta: 30, h: 60, G: 1000, d: 0, op: 'mpp', rIdx: 50, pos: 'optimo', luz: 'sol', nm: null };
   const LUCES = { sol: { nm: null }, azul: { nm: 450 }, roja: { nm: 650 }, ir: { nm: 1400 } };
   const EG = 1.12, HC = 1239.84; /* brecha del silicio (referencia) y h·c en eV·nm */
   const P = { voc: 0, isc: 0, vmp: 0, imp: 0 };
@@ -64,7 +64,7 @@
     const directo = Math.max(0, cosT);
     const theta = cosT >= 0 ? deg(Math.acos(Math.min(1, cosT))) : null;
     const gInc = (S.G * directo + (S.G * S.d) / 100) / 1000;
-    const nm = LUCES[S.luz].nm;
+    const nm = S.nm;
     const cf = nm === null || HC / nm >= EG ? 1 : 0; /* ¿cada fotón trae al menos 1.12 eV? */
     return { cosT, directo, theta, gInc, cf, g: gInc * cf };
   }
@@ -129,6 +129,19 @@
     document.querySelectorAll('#seg-pos [data-pos]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.pos === S.pos)));
   }
 
+  /* ---------- Luz de la animación ---------- */
+  const NOMBRE_COLOR = [[450, 'violeta'], [495, 'azul'], [570, 'verde'], [590, 'amarillo'], [620, 'naranja'], [750, 'rojo'], [1e9, 'infrarrojo']];
+  const nombreColor = (nm) => NOMBRE_COLOR.find(([l]) => nm < l)[1];
+  function marcaLuz() {
+    document.querySelectorAll('#seg-luz [data-luz]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.luz === S.luz)));
+    const o = $('#o-nm'), sNm = $('#s-nm');
+    if (!o || !sNm) return;
+    const esp = sNm.closest('.espectro');
+    esp.classList.toggle('mezcla', S.nm === null);
+    if (S.nm === null) { o.textContent = 'Todos los colores del Sol'; sNm.setAttribute('aria-valuetext', 'Sol, todos los colores'); }
+    else { const t = `${S.nm} nm · ${nombreColor(S.nm)} · ${f(HC / S.nm, 2)} eV`; o.textContent = t; sNm.setAttribute('aria-valuetext', t); }
+  }
+
   /* ---------- Controles ---------- */
   function setPos(id) {
     S.pos = id;
@@ -169,27 +182,59 @@
     n.addEventListener('change', () => { n.value = S[clave]; });
   }
 
-  /* ---------- Dibujo ---------- */
+  /* ---------- Dibujo (diagrama de líneas finas) ---------- */
+  const SV = { cx: 320, cy: 190, rArco: 160, medio: 92, suelo: 300 };
+  const at = (el, o) => { for (const k in o) el.setAttribute(k, typeof o[k] === 'number' ? o[k].toFixed(1) : o[k]); };
+  function arco(cx, cy, r, a0, a1, horario) {
+    const p0 = [cx + r * Math.cos(a0), cy + r * Math.sin(a0)], p1 = [cx + r * Math.cos(a1), cy + r * Math.sin(a1)];
+    const grande = Math.abs(a1 - a0) > Math.PI ? 1 : 0;
+    return `M${p0[0].toFixed(1)} ${p0[1].toFixed(1)} A${r} ${r} 0 ${grande} ${horario ? 1 : 0} ${p1[0].toFixed(1)} ${p1[1].toFixed(1)}`;
+  }
   function dibuja(geo) {
-    const C = { x: 230, y: 176 };
-    const sx = Math.cos(rad(S.h)), sy = -Math.sin(rad(S.h));
-    const px = Math.sin(rad(S.h)), py = Math.cos(rad(S.h));
-    $('#sv-sol-g').setAttribute('transform', `translate(${(C.x + 150 * sx).toFixed(1)} ${(C.y + 150 * sy).toFixed(1)})`);
-    $('#sv-panel').setAttribute('transform', `translate(${C.x} ${C.y}) rotate(${S.beta})`);
-    const rayos = $('#sv-rayos');
-    const op = (0.25 + 0.75 * Math.min(1, geo.g)).toFixed(2);
-    rayos.setAttribute('stroke-opacity', geo.g > 0 ? op : '0.12');
-    rayos.innerHTML = [-40, -14, 14, 40].map((o) => {
-      const x1 = C.x + sx * 118 + px * o, y1 = C.y + sy * 118 + py * o;
-      const x2 = C.x + sx * 20 + px * o * 0.9, y2 = C.y + sy * 20 + py * o * 0.9;
-      return `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"/>`;
+    const { cx, cy, rArco, medio, suelo } = SV;
+    const hR = rad(S.h), bR = rad(S.beta);
+    const d = [Math.cos(hR), -Math.sin(hR)];             /* hacia el sol */
+    const u = [Math.cos(bR), Math.sin(bR)];              /* a lo largo del panel */
+    const sol = [cx + rArco * d[0], cy + rArco * d[1]];
+    $('#sv-sol-g').setAttribute('transform', `translate(${sol[0].toFixed(1)} ${sol[1].toFixed(1)})`);
+    $('#sv-panel').setAttribute('transform', `translate(${cx} ${cy}) rotate(${S.beta})`);
+    /* haz de luz: banda paralela del panel hacia el sol; su ancho es 2·medio·cos θ */
+    const p1 = [cx - medio * u[0], cy - medio * u[1]], p2 = [cx + medio * u[0], cy + medio * u[1]];
+    const largo = (p) => (sol[0] - p[0]) * d[0] + (sol[1] - p[1]) * d[1];
+    const l1 = largo(p1), l2 = largo(p2);
+    const q1 = [p1[0] + d[0] * l1, p1[1] + d[1] * l1], q2 = [p2[0] + d[0] * l2, p2[1] + d[1] * l2];
+    const haz = $('#sv-haz'), rayos = $('#sv-rayos');
+    const fuerza = geo.g > 0 ? 0.25 + 0.75 * Math.min(1, geo.g) : 0.12;
+    haz.setAttribute('points', [p1, q1, q2, p2].map((p) => p.map((v) => v.toFixed(1)).join(',')).join(' '));
+    haz.setAttribute('opacity', (geo.theta === null ? 0.35 : 1) * fuerza);
+    const gr = $('#sv-haz-g');
+    at(gr, { x1: sol[0], y1: sol[1], x2: cx, y2: cy });
+    rayos.setAttribute('stroke-opacity', (geo.theta === null ? 0.3 : fuerza).toFixed(2));
+    rayos.innerHTML = [0.18, 0.5, 0.82].map((k) => {
+      const b0 = [p1[0] + (p2[0] - p1[0]) * k, p1[1] + (p2[1] - p1[1]) * k];
+      const lk = largo(b0);
+      return `<line x1="${(b0[0] + d[0] * lk).toFixed(1)}" y1="${(b0[1] + d[1] * lk).toFixed(1)}" x2="${b0[0].toFixed(1)}" y2="${b0[1].toFixed(1)}"/>`;
     }).join('');
-    const nx = Math.sin(rad(S.beta)), ny = -Math.cos(rad(S.beta));
-    let len = 58;
-    if (ny > 0) len = Math.min(len, (236 - C.y) / ny);
+    /* normal de la cara frontal */
+    const n = [Math.sin(bR), -Math.cos(bR)];
+    let ln = 74;
+    if (n[1] > 0) ln = Math.min(ln, (suelo - 8 - cy) / n[1]);
     const nl = $('#sv-normal');
-    nl.setAttribute('x1', C.x); nl.setAttribute('y1', C.y);
-    nl.setAttribute('x2', (C.x + nx * len).toFixed(1)); nl.setAttribute('y2', (C.y + ny * len).toFixed(1));
+    at(nl, { x1: cx, y1: cy, x2: cx + n[0] * ln, y2: cy + n[1] * ln });
+    const nt = $('#sv-normal-t');
+    at(nt, { x: cx + n[0] * (ln + 8) + (n[0] >= 0 ? 4 : -4), y: cy + n[1] * (ln + 8) + 4 });
+    nt.setAttribute('text-anchor', n[0] >= 0 ? 'start' : 'end');
+    /* ángulos β (bajo la horizontal) y h (sobre la horizontal) */
+    const ab = $('#sv-arco-b'), tb = $('#sv-t-b');
+    ab.setAttribute('d', S.beta > 0.5 ? arco(cx, cy, 40, 0, bR, true) : '');
+    const mb = bR / 2, rb = S.beta > 120 ? 54 : 52;
+    at(tb, { x: cx + rb * Math.cos(mb) + 6, y: cy + rb * Math.sin(mb) + 10 });
+    tb.textContent = `β = ${S.beta}°`;
+    const ah = $('#sv-arco-h'), th = $('#sv-t-h');
+    ah.setAttribute('d', arco(cx, cy, 62, 0, -hR, false));
+    const mh = -hR / 2;
+    at(th, { x: cx + 72 * Math.cos(mh) + 2, y: cy + 72 * Math.sin(mh) + 4 });
+    th.textContent = `h = ${S.h}°`;
     const t = $('#sv-txt');
     t.textContent = geo.theta === null ? 'La luz directa pega por detrás' : `θ = ${f(geo.theta, 0)}°`;
     const desc = `Panel con inclinación ${S.beta}°, sol a ${S.h}° sobre el horizonte. ` +
@@ -199,43 +244,67 @@
   }
 
   /* ---------- Gráfica ---------- */
+  function coloresGrafica() {
+    const os = document.documentElement.dataset.tema === 'oscuro';
+    return os
+      ? { texto: '#D7E1EF', reja: 'rgba(142,197,255,.10)', corriente: '#5AA2FF', potencia: '#F5A300', carga: '#7D8CA6', crema: '#3A2C10', punto: '#EAF3FF', ejeI: '#8EC5FF', ejeP: '#FFC22E', tip: '#1B2C4A' }
+      : { texto: '#101828', reja: '#EEF3FB', corriente: '#0F4DBC', potencia: '#C77D00', carga: '#8A97AD', crema: '#FFF4D1', punto: '#0B2A5B', ejeI: '#0F4DBC', ejeP: '#8A5600', tip: '#0B2A5B' };
+  }
+  function retemaGrafica() {
+    if (!chart) return;
+    const T = coloresGrafica(), d = chart.data.datasets, o = chart.options.scales;
+    Chart.defaults.color = T.texto;
+    d[0].borderColor = d[0].backgroundColor = T.corriente;
+    d[1].borderColor = d[1].backgroundColor = T.potencia;
+    d[2].borderColor = T.carga;
+    d[3].borderColor = T.potencia; d[3].backgroundColor = T.crema;
+    d[4].borderColor = T.punto;
+    o.x.title.color = o.x.ticks.color = T.texto; o.x.grid.color = T.reja;
+    o.y.title.color = o.y.ticks.color = T.ejeI; o.y.grid.color = T.reja;
+    o.y2.title.color = o.y2.ticks.color = T.ejeP;
+    chart.options.plugins.tooltip.backgroundColor = T.tip;
+    chart.update('none');
+  }
+  window.addEventListener('atlas:tema', retemaGrafica);
   function creaGrafica() {
     if (typeof Chart === 'undefined') {
       $('#g-iv').parentElement.innerHTML = '<p class="nodisp"><strong>Dato no disponible</strong>No se cargó la librería de gráficas.</p>';
       return;
     }
     Chart.defaults.font.family = '"Inter", system-ui, sans-serif';
-    Chart.defaults.color = '#101828';
+    const T = coloresGrafica();
+    Chart.defaults.color = T.texto;
     const eje = (t, pos, color, grid) => ({
       type: 'linear', position: pos, min: 0,
       title: { display: true, text: t, color },
       ticks: { color, maxTicksLimit: 7 },
-      grid: { color: grid ? '#EEF3FB' : 'transparent', drawOnChartArea: grid },
+      grid: { color: grid ? T.reja : 'transparent', drawOnChartArea: grid },
       border: { display: false },
     });
     chart = new Chart($('#g-iv'), {
       type: 'line',
       data: {
         datasets: [
-          { label: 'Corriente', data: [], yAxisID: 'y', borderColor: '#0F4DBC', backgroundColor: '#0F4DBC', borderWidth: 3, pointRadius: 0, tension: 0 },
-          { label: 'Potencia', data: [], yAxisID: 'y2', borderColor: '#C77D00', backgroundColor: '#C77D00', borderWidth: 3, pointRadius: 0, tension: 0 },
-          { label: 'Carga', data: [], yAxisID: 'y', borderColor: '#8A97AD', borderWidth: 2, borderDash: [6, 5], pointRadius: 0 },
-          { label: 'Máxima potencia', data: [], yAxisID: 'y2', showLine: false, pointStyle: 'rectRot', pointRadius: 7, borderColor: '#C77D00', backgroundColor: '#FFF4D1', borderWidth: 2 },
-          { label: 'Tu punto', data: [], yAxisID: 'y', showLine: false, pointRadius: 8, borderColor: '#0B2A5B', backgroundColor: '#FFC22E', borderWidth: 3 },
+          { label: 'Corriente', data: [], yAxisID: 'y', borderColor: T.corriente, backgroundColor: T.corriente, borderWidth: 3, pointRadius: 0, tension: 0 },
+          { label: 'Potencia', data: [], yAxisID: 'y2', borderColor: T.potencia, backgroundColor: T.potencia, borderWidth: 3, pointRadius: 0, tension: 0 },
+          { label: 'Carga', data: [], yAxisID: 'y', borderColor: T.carga, borderWidth: 2, borderDash: [6, 5], pointRadius: 0 },
+          { label: 'Máxima potencia', data: [], yAxisID: 'y2', showLine: false, pointStyle: 'rectRot', pointRadius: 7, borderColor: T.potencia, backgroundColor: T.crema, borderWidth: 2 },
+          { label: 'Tu punto', data: [], yAxisID: 'y', showLine: false, pointRadius: 8, borderColor: T.punto, backgroundColor: '#FFC22E', borderWidth: 3 },
         ],
       },
       options: {
-        responsive: true, maintainAspectRatio: false, animation: false, parsing: false,
+        responsive: true, maintainAspectRatio: false, parsing: false,
+        animation: quieto ? false : { duration: 900, easing: 'easeOutCubic' },
         interaction: { mode: 'nearest', axis: 'x', intersect: false },
         scales: {
-          x: eje('Voltaje (V)', 'bottom', '#101828', true),
-          y: eje('Corriente (A)', 'left', '#0F4DBC', true),
-          y2: eje('Potencia (W)', 'right', '#8A5600', false),
+          x: eje('Voltaje (V)', 'bottom', T.texto, true),
+          y: eje('Corriente (A)', 'left', T.ejeI, true),
+          y2: eje('Potencia (W)', 'right', T.ejeP, false),
         },
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#0B2A5B', padding: 10, cornerRadius: 10,
+            backgroundColor: T.tip, padding: 10, cornerRadius: 10,
             filter: (c) => c.datasetIndex !== 2,
             callbacks: {
               title: (it) => `${f(it[0].parsed.x, 2)} V`,
@@ -300,6 +369,17 @@
       rTxt = `${f(R, R < 10 ? 2 : R < 100 ? 1 : 0)} Ω`;
     }
     $('#o-r').textContent = rTxt;
+    document.querySelectorAll('#solar input[type=range]').forEach((r) => {
+      const mn = +r.min, mx = +r.max;
+      r.style.setProperty('--p', `${(((+r.value - mn) / (mx - mn)) * 100).toFixed(1)}%`);
+    });
+    const g2 = $('#s-g2');
+    if (g2) {
+      if (document.activeElement !== g2) g2.value = S.G;
+      $('#o-g2').textContent = `${S.G} W/m²`;
+      $('#o-llega').innerHTML = `${f(geo.gInc * 1000, 0)}<small> W/m²</small>`;
+      $('#o-llega-bar').style.width = `${Math.min(100, geo.gInc * 100).toFixed(1)}%`;
+    }
     $('#k-theta').textContent = geo.theta === null ? '> 90°' : `${f(geo.theta, 0)}°`;
     $('#k-g').innerHTML = `${f(geo.gInc * 1000, 0)}<small> W/m²</small>`;
     $('#k-voc').innerHTML = `${f(vo, 2)}<small> V</small>`;
@@ -315,7 +395,7 @@
     bar.style.width = `${(frac * 100).toFixed(0)}%`;
     bar.style.background = frac >= 0.9 ? '#1a7f4e' : frac >= 0.6 ? '#F5A300' : '#b42318';
     let msg;
-    if (geo.cf === 0 && geo.gInc > 0) { const nm = LUCES[S.luz].nm; msg = `Con luz de ${nm} nm cada fotón trae ${f(HC / nm, 2)} eV, menos que los ${EG} eV que pide el silicio: no libera electrones y el panel no genera nada, aunque la luz sea intensa.`; }
+    if (geo.cf === 0 && geo.gInc > 0) { const nm = S.nm; msg = `Con luz de ${nm} nm cada fotón trae ${f(HC / nm, 2)} eV, menos que los ${EG} eV que pide el silicio: no libera electrones y el panel no genera nada, aunque la luz sea intensa.`; }
     else if (g <= 0) msg = 'Sin luz directa ni difusa el modelo no genera nada. Tu panel boca abajo sí marcó ' + f(D.posiciones[0].voltaje.v, 2) + ' V: algo de luz llegó, y el voltaje responde a muy poca luz.';
     else if (S.op === 'cc') msg = 'En cortocircuito la corriente es la máxima, pero el voltaje es cero, así que la potencia es cero. Así se mide la corriente con el amperímetro.';
     else if (S.op === 'ca') msg = 'En circuito abierto el voltaje es el máximo, pero la corriente es cero, así que la potencia es cero. Así se mide el voltaje con el voltímetro.';
@@ -327,7 +407,7 @@
     if (window.CeldaAnim) {
       const volt = op.v, cor = op.i;
       window.CeldaAnim.update({
-        gInc: geo.gInc, cf: geo.cf, theta: geo.theta, luz: S.luz, nm: LUCES[S.luz].nm, G: S.G,
+        gInc: geo.gInc, cf: geo.cf, theta: geo.theta, luz: S.luz, nm: S.nm, G: S.G,
         ratioI: P.isc > 0 ? Math.min(1, cor / P.isc) : 0, iOp: g > 0 ? cor : 0, pRatio: nom > 0 ? pOp / nom : 0,
         rTxt: rTxt.length > 16 ? rTxt.replace(/ \(.*\)/, '') : rTxt,
         vTxt: `${f(volt, 2)} V`, iTxt: cor >= 0.1 ? `${f(cor, 2)} A` : `${f(cor * 1000, 0)} mA`, pTxt: `${f(pOp, 1)} W`,
@@ -365,8 +445,17 @@
 
   /* ---------- Inicio ---------- */
   function iniciaSvg() {
-    const c = $('#sv-celdas');
-    c.innerHTML = [-48, -24, 0, 24, 48].map((x) => `<line x1="${x}" y1="-8" x2="${x}" y2="0"/>`).join('');
+    const { cx, cy, rArco } = SV;
+    $('#sv-celdas').innerHTML = [-69, -46, -23, 0, 23, 46, 69].map((x) => `<line x1="${x}" y1="-6" x2="${x}" y2="3"/>`).join('');
+    let tk = '';
+    for (let a = 0; a <= 180; a += 15) {
+      const r = rad(a), l = a % 45 === 0 ? 9 : 5;
+      tk += `<line x1="${(cx + rArco * Math.cos(r)).toFixed(1)}" y1="${(cy - rArco * Math.sin(r)).toFixed(1)}" x2="${(cx + (rArco - l) * Math.cos(r)).toFixed(1)}" y2="${(cy - (rArco - l) * Math.sin(r)).toFixed(1)}"/>`;
+    }
+    $('#sv-ticks').innerHTML = tk;
+    let tr = '';
+    for (let x = 60; x < 600; x += 30) tr += `<line x1="${x}" y1="300" x2="${x - 8}" y2="310"/>`;
+    $('#sv-trama').innerHTML = tr;
   }
   function iniciar() {
     iniciaSvg(); creaGrafica();
@@ -385,10 +474,36 @@
     document.querySelectorAll('#seg-pos [data-pos]').forEach((b) => b.addEventListener('click', () => setPos(b.dataset.pos)));
     document.querySelectorAll('#op-rapidos [data-op]').forEach((b) => b.addEventListener('click', () => setOp(b.dataset.op)));
     document.querySelectorAll('#seg-luz [data-luz]').forEach((b) => b.addEventListener('click', () => {
-      S.luz = b.dataset.luz;
-      document.querySelectorAll('#seg-luz [data-luz]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-      pide();
+      S.luz = b.dataset.luz; S.nm = LUCES[S.luz].nm;
+      if (S.nm) $('#s-nm').value = S.nm;
+      marcaLuz(); pide();
     }));
+    const sNm = $('#s-nm');
+    if (sNm) sNm.addEventListener('input', () => {
+      S.nm = +sNm.value;
+      const k = Object.keys(LUCES).find((x) => LUCES[x].nm === S.nm);
+      S.luz = k || 'nm';
+      marcaLuz(); pide();
+    });
+    const g2 = $('#s-g2');
+    if (g2) g2.addEventListener('input', () => {
+      const r = $('#s-g'); r.value = g2.value; r.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    const umb = $('#esp-umbral');
+    if (umb) {
+      const l0 = HC / EG, k = (l0 - 380) / (1500 - 380);
+      umb.style.left = `${(k * 100).toFixed(2)}%`;
+      umb.querySelector('b').textContent = `${f(l0, 0)} nm`;
+      umb.title = `Límite del silicio: ${f(l0, 0)} nm (${EG} eV)`;
+    }
+    marcaLuz();
+    const cIv = $('#g-iv');
+    if (chart && cIv && !quieto && 'IntersectionObserver' in window) {
+      const ioG = new IntersectionObserver((es) => {
+        if (es[0].isIntersecting) { ioG.disconnect(); chart.reset(); chart.update(); }
+      }, { threshold: 0.35 });
+      ioG.observe(cIv);
+    }
     ['#p-voc', '#p-isc', '#p-vmp', '#p-imp'].forEach((id) => $(id).addEventListener('input', leePlaca));
     $('#p-reset').addEventListener('click', ponPlacaInicial);
     marcaActiva(); pide();

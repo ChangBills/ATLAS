@@ -11,7 +11,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/atlas.css?v=20261116">
+  <link rel="stylesheet" href="css/atlas.css?v=20261117">
+  <script>(function(){try{var t=localStorage.getItem("atlas-tema");if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"oscuro":"claro";document.documentElement.dataset.tema=t;}catch(e){}})();</script>
 </head>
 <body>
 <a class="saltar" href="#contenido">Saltar al contenido</a>
@@ -27,6 +28,10 @@
       <a href="sabias-que.html"><span>4</span>¿Sabías que?</a>
       <a class="mod-solar" href="#solar"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="currentColor"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>Simulador de celdas solares</a>
     </nav>
+    <button type="button" class="tema-btn" id="tema-btn" aria-label="Activar modo oscuro" aria-pressed="false">
+      <svg class="ico-luna" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 1 1 9.8 3.5a7 7 0 0 0 10.7 10.7z" fill="currentColor"/></svg>
+      <svg class="ico-sol" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="currentColor"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+    </button>
   </div>
 </header>
 
@@ -59,15 +64,15 @@
       <h2>Cinco etapas, un mismo flujo de energía</h2>
       <p class="intro">Cada etapa del atlas responde a un paso físico del sistema eléctrico. Los números de abajo son el punto de partida de cada módulo.</p>
       <div class="flujo" aria-label="Flujo de la energía eléctrica">
-        <div class="paso"><strong>Recursos</strong><small>23.4 % de la generación fue limpia en 2024*</small></div>
+        <div class="paso"><strong>Recursos</strong><small><span data-cuenta>23.4</span> % de la generación fue limpia en 2024*</small></div>
         <span class="flecha" aria-hidden="true">→</span>
-        <div class="paso"><strong>Generación</strong><small>352,305 GWh inyectados a la red en 2024</small></div>
+        <div class="paso"><strong>Generación</strong><small><span data-cuenta>352,305</span> GWh inyectados a la red en 2024</small></div>
         <span class="flecha" aria-hidden="true">→</span>
-        <div class="paso"><strong>Transmisión</strong><small>111,138 km de líneas de CFE</small></div>
+        <div class="paso"><strong>Transmisión</strong><small><span data-cuenta>111,138</span> km de líneas de CFE</small></div>
         <span class="flecha" aria-hidden="true">→</span>
-        <div class="paso"><strong>Distribución</strong><small>901 mil km de redes de CFE</small></div>
+        <div class="paso"><strong>Distribución</strong><small><span data-cuenta>901</span> mil km de redes de CFE</small></div>
         <span class="flecha" aria-hidden="true">→</span>
-        <div class="paso"><strong>Consumidor</strong><small>49.1 millones de usuarios de CFE</small></div>
+        <div class="paso"><strong>Consumidor</strong><small><span data-cuenta>49.1</span> millones de usuarios de CFE</small></div>
       </div>
       <p class="fuente" style="margin-top:16px;border:0;padding:0">* Cálculo con la Tabla 2.2 del Plan de Desarrollo del Sector Eléctrico 2025-2030 (DOF 17/10/2025, p. 20). Generación: misma tabla. Transmisión: CFE, Informe Anual 2024, p. 76. Distribución y usuarios: CFE, Informe Anual 2024, p. 95.</p>
     </div>
@@ -97,129 +102,161 @@
 
       <div class="aviso" id="aviso-corriente" style="margin-top:20px" hidden></div>
 
-      <div class="simulador solar-sim" style="margin-top:28px">
-        <div class="panel" aria-labelledby="t-ctrl-solar">
-          <h3 id="t-ctrl-solar">Controles</h3>
-          <div class="placa-chips" id="placa-chips" aria-label="Datos de la placa que usa el simulador"></div>
-
-          <div class="control">
-            <span class="rot" id="r-posicion" style="font-size:.88rem;font-weight:600;color:var(--azul-marino)">Posición del panel</span>
-            <div class="segmentado sol-seg" role="group" aria-labelledby="r-posicion" id="seg-pos">
-              <button type="button" data-pos="abajo" aria-pressed="false">Boca abajo</button>
-              <button type="button" data-pos="piso" aria-pressed="false">En el piso</button>
-              <button type="button" data-pos="optimo" aria-pressed="true">Inclinado óptimo</button>
+      <article class="panel sol-vista" style="margin-top:28px" aria-labelledby="t-res-solar">
+        <h3 id="t-res-solar">Lo que ve y entrega el panel</h3>
+        <div class="sol-vista-rej">
+          <div class="sol-lecturas">
+            <h4 class="sub-res">Punto de operación con tu carga</h4>
+            <div class="res-fila res-grande"><span>Potencia entregada <span class="sello calculo">Cálculo</span></span><output class="resultado" id="o-p"></output></div>
+            <div class="medidor" aria-hidden="true"><div id="o-bar"></div></div>
+            <div class="res-fila"><span>Potencia máxima posible con esta luz</span><output class="resultado sec" id="o-pm"></output></div>
+            <div class="sol-par">
+              <div class="res-fila"><span>Voltaje en la carga</span><output class="resultado" id="o-v"></output></div>
+              <div class="res-fila"><span>Corriente en la carga</span><output class="resultado" id="o-i"></output></div>
+            </div>
+            <div class="solar-kpis" aria-live="polite">
+              <div class="kpi-mini"><span class="k">Ángulo de incidencia, θ</span><b id="k-theta"></b></div>
+              <div class="kpi-mini"><span class="k">Luz total que recibe</span><b id="k-g"></b></div>
+              <div class="kpi-mini"><span class="k">Voltaje de circuito abierto, Voc</span><b id="k-voc"></b></div>
+              <div class="kpi-mini"><span class="k">Corriente de cortocircuito, Isc</span><b id="k-isc"></b></div>
             </div>
           </div>
-
-          <div class="control">
-            <label for="s-beta">Inclinación del panel, β <span class="und">0° = acostado · 90° = parado · 180° = boca abajo</span></label>
-            <div class="par"><input type="range" id="s-beta" min="0" max="180" step="1" value="30"><input type="number" id="n-beta" min="0" max="180" step="1" value="30" aria-label="Inclinación en grados"></div>
-          </div>
-          <div class="control">
-            <label for="s-h">Altura del sol sobre el horizonte, h <span class="und">° (ejemplo)</span></label>
-            <div class="par"><input type="range" id="s-h" min="5" max="90" step="1" value="60"><input type="number" id="n-h" min="5" max="90" step="1" value="60" aria-label="Altura del sol en grados"></div>
-          </div>
-          <div class="control">
-            <label for="s-g">Luz directa perpendicular, G <span class="und">W/m²</span></label>
-            <div class="par"><input type="range" id="s-g" min="100" max="1000" step="10" value="1000"><input type="number" id="n-g" min="100" max="1000" step="10" value="1000" aria-label="Irradiancia en watts por metro cuadrado"></div>
-          </div>
-          <div class="control">
-            <label for="s-d">Luz difusa y reflejada <span class="und">% de G</span></label>
-            <div class="par"><input type="range" id="s-d" min="0" max="30" step="1" value="0"><input type="number" id="n-d" min="0" max="30" step="1" value="0" aria-label="Luz difusa en porcentaje"></div>
-          </div>
-
-          <div class="control">
-            <label for="s-r">Carga conectada al panel, R <span class="und" id="u-r">Ω</span></label>
-            <div class="par"><input type="range" id="s-r" min="0" max="100" step="1" value="50"><output id="o-r" class="res-r" aria-live="off"></output></div>
-            <div class="filtros" id="op-rapidos" role="group" aria-label="Puntos de operación">
-              <button type="button" class="filtro" data-op="cc" aria-pressed="false">Cortocircuito (amperímetro)</button>
-              <button type="button" class="filtro" data-op="ca" aria-pressed="false">Circuito abierto (voltímetro)</button>
-              <button type="button" class="filtro" data-op="mpp" aria-pressed="true">Máxima potencia</button>
-            </div>
-          </div>
-
-          <details class="pasos" id="det-placa">
-            <summary>Datos de la placa (puedes corregirlos)</summary>
-            <div class="placa-grid">
-              <label for="p-voc">Voc, voltaje de circuito abierto <span class="und">V</span><input type="number" id="p-voc" step="0.1" min="1"></label>
-              <label for="p-isc">Isc, corriente de cortocircuito <span class="und">A</span><input type="number" id="p-isc" step="0.01" min="0.1"></label>
-              <label for="p-vmp">Vmp, voltaje de máxima potencia <span class="und">V</span><input type="number" id="p-vmp" step="0.1" min="1"></label>
-              <label for="p-imp">Imp, corriente de máxima potencia <span class="und">A</span><input type="number" id="p-imp" step="0.01" min="0.1"></label>
-            </div>
-            <p class="nota-placa" id="nota-placa"></p>
-            <div class="botones"><button type="button" class="filtro" id="p-reset">Volver a lo que leí de la etiqueta</button></div>
-          </details>
-          <p class="aviso" style="margin-top:14px">Los valores iniciales de altura del sol, luz y carga son de ejemplo para explorar el modelo. No son mediciones de tu experimento.</p>
-        </div>
-
-        <div class="panel" aria-labelledby="t-res-solar">
-          <h3 id="t-res-solar">Lo que ve y entrega el panel</h3>
           <figure class="solar-fig">
-            <svg id="solar-svg" viewBox="0 0 460 270" role="img" aria-label="Ilustración del panel solar y el sol">
+            <svg id="solar-svg" data-anim viewBox="0 0 640 330" role="img" aria-label="Ilustración del panel solar y el sol">
               <defs>
-                <linearGradient id="sv-cielo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EAF3FF"/><stop offset="1" stop-color="#FFFFFF"/></linearGradient>
-                <linearGradient id="sv-sol" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFC22E"/><stop offset="1" stop-color="#F5A300"/></linearGradient>
-                <linearGradient id="sv-cel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0F4DBC"/><stop offset="1" stop-color="#0B2A5B"/></linearGradient>
+                <linearGradient id="sv-haz-g" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1" y2="1"><stop offset="0" class="sv-haz-a"/><stop offset="1" class="sv-haz-b"/></linearGradient>
+                <radialGradient id="sv-halo"><stop offset="0" stop-color="#FFC22E" stop-opacity=".5"/><stop offset="1" stop-color="#FFC22E" stop-opacity="0"/></radialGradient>
+                <linearGradient id="sv-cel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0B2A5B"/><stop offset=".5" stop-color="#0F4DBC"/><stop offset="1" stop-color="#0B2A5B"/></linearGradient>
               </defs>
-              <rect x="0" y="0" width="460" height="270" rx="18" fill="url(#sv-cielo)"/>
-              <rect x="0" y="238" width="460" height="32" fill="#0B2A5B" opacity=".08"/>
-              <line x1="0" y1="238" x2="460" y2="238" stroke="#8EC5FF" stroke-width="2"/>
-              <g id="sv-rayos" stroke="#F5A300" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="2 8"></g>
-              <line id="sv-soporte" x1="230" y1="176" x2="230" y2="238" stroke="#0B2A5B" stroke-width="4" stroke-linecap="round"/>
-              <line id="sv-normal" stroke="#19C3E6" stroke-width="2" stroke-dasharray="5 5" stroke-linecap="round"/>
-              <g id="sv-panel" transform="translate(230 176)">
-                <rect x="-72" y="-8" width="144" height="8" rx="2" fill="url(#sv-cel)"/>
-                <g id="sv-celdas" stroke="#8EC5FF" stroke-width="1" opacity=".75"></g>
-                <rect x="-72" y="0" width="144" height="5" rx="2" fill="#D3E3FA" stroke="#8EC5FF" stroke-width="1"/>
+              <path class="sv-guia" d="M160 190 A160 160 0 0 1 480 190"/>
+              <line class="sv-guia sv-punteada" x1="138" y1="190" x2="502" y2="190"/>
+              <g id="sv-ticks" class="sv-tick"></g>
+              <text class="sv-gris" x="488" y="184">0°</text>
+              <text class="sv-gris" x="311" y="22">90°</text>
+              <polygon id="sv-haz" fill="url(#sv-haz-g)"/>
+              <g id="sv-rayos" class="sv-rayo"></g>
+              <line class="sv-suelo" x1="40" y1="300" x2="600" y2="300"/>
+              <g id="sv-trama" class="sv-tick"></g>
+              <line id="sv-soporte" class="sv-soporte" x1="320" y1="190" x2="320" y2="300"/>
+              <line id="sv-normal" class="sv-normal"/>
+              <text id="sv-normal-t" class="sv-normal-t">normal</text>
+              <g id="sv-panel" transform="translate(320 190)">
+                <rect x="-92" y="-6" width="184" height="9" rx="2" fill="url(#sv-cel)"/>
+                <g id="sv-celdas" stroke="#8EC5FF" stroke-width=".8" opacity=".6"></g>
+                <rect x="-92" y="-6" width="184" height="1.5" fill="#fff" opacity=".35"/>
+                <rect class="sv-reverso" x="-92" y="3" width="184" height="3" rx="1.5"/>
               </g>
+              <circle class="sv-pivote" cx="320" cy="190" r="4.5"/>
+              <path id="sv-arco-b" class="sv-arco-b"/>
+              <text id="sv-t-b" class="sv-et"></text>
+              <path id="sv-arco-h" class="sv-arco-h"/>
+              <text id="sv-t-h" class="sv-et sv-et-sol"></text>
               <g id="sv-sol-g">
-                <circle r="26" fill="#FFC22E" opacity=".25"/>
-                <circle r="17" fill="url(#sv-sol)"/>
+                <circle r="36" fill="url(#sv-halo)" class="sv-halo"/>
+                <circle r="13" class="sv-sol"/>
               </g>
-              <text id="sv-txt" x="14" y="26" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="600" fill="#0B2A5B"></text>
+              <text id="sv-txt" class="sv-et sv-et-grande" x="20" y="32"></text>
             </svg>
             <figcaption class="sr-only" id="sv-desc"></figcaption>
           </figure>
-
-          <div class="solar-kpis" aria-live="polite">
-            <div class="kpi-mini"><span class="k">Ángulo de incidencia, θ</span><b id="k-theta"></b></div>
-            <div class="kpi-mini"><span class="k">Luz total que recibe</span><b id="k-g"></b></div>
-            <div class="kpi-mini"><span class="k">Voltaje de circuito abierto, Voc</span><b id="k-voc"></b></div>
-            <div class="kpi-mini"><span class="k">Corriente de cortocircuito, Isc</span><b id="k-isc"></b></div>
-          </div>
-
-          <div class="formula">Isc = g × Isc<sub>placa</sub> · g = (G × cos θ + difusa) ÷ 1000</div>
-          <h4 class="sub-res">Punto de operación con tu carga</h4>
-          <div class="res-fila"><span>Voltaje en la carga</span><output class="resultado" id="o-v"></output></div>
-          <div class="res-fila"><span>Corriente en la carga</span><output class="resultado" id="o-i"></output></div>
-          <div class="res-fila"><span>Potencia entregada</span><output class="resultado" id="o-p"></output></div>
-          <div class="res-fila"><span>Potencia máxima posible con esta luz</span><output class="resultado sec" id="o-pm"></output></div>
-          <div class="medidor" aria-hidden="true"><div id="o-bar"></div></div>
-          <p class="desc" id="o-aviso" role="status" style="margin:6px 0 0"></p>
         </div>
+        <div class="formula">Isc = g × Isc<sub>placa</sub> · g = (G × cos θ + difusa) ÷ 1000</div>
+        <p class="desc" id="o-aviso" role="status" style="margin:0"></p>
+      </article>
+
+      <div class="panel sol-ctrl" style="margin-top:20px" aria-labelledby="t-ctrl-solar">
+        <h3 id="t-ctrl-solar">Controles</h3>
+        <div class="placa-chips" id="placa-chips" aria-label="Datos de la placa que usa el simulador"></div>
+        <div class="sol-ctrl-rej">
+          <div>
+            <div class="control">
+              <span class="rot" id="r-posicion">Posición del panel</span>
+              <div class="segmentado sol-seg" role="group" aria-labelledby="r-posicion" id="seg-pos">
+                <button type="button" data-pos="abajo" aria-pressed="false">Boca abajo</button>
+                <button type="button" data-pos="piso" aria-pressed="false">En el piso</button>
+                <button type="button" data-pos="optimo" aria-pressed="true">Inclinado óptimo</button>
+              </div>
+            </div>
+            <div class="control">
+              <label for="s-beta">Inclinación del panel, β <span class="und">0° = acostado · 90° = parado · 180° = boca abajo</span></label>
+              <div class="par"><input type="range" id="s-beta" min="0" max="180" step="1" value="30"><input type="number" id="n-beta" min="0" max="180" step="1" value="30" aria-label="Inclinación en grados"></div>
+            </div>
+            <div class="control">
+              <label for="s-h">Altura del sol sobre el horizonte, h <span class="und">° (ejemplo)</span></label>
+              <div class="par"><input type="range" id="s-h" min="5" max="90" step="1" value="60"><input type="number" id="n-h" min="5" max="90" step="1" value="60" aria-label="Altura del sol en grados"></div>
+            </div>
+          </div>
+          <div>
+            <div class="control">
+              <label for="s-g">Luz directa perpendicular, G <span class="und">W/m²</span></label>
+              <div class="par"><input type="range" id="s-g" min="100" max="1000" step="10" value="1000"><input type="number" id="n-g" min="100" max="1000" step="10" value="1000" aria-label="Irradiancia en watts por metro cuadrado"></div>
+            </div>
+            <div class="control">
+              <label for="s-d">Luz difusa y reflejada <span class="und">% de G</span></label>
+              <div class="par"><input type="range" id="s-d" min="0" max="30" step="1" value="0"><input type="number" id="n-d" min="0" max="30" step="1" value="0" aria-label="Luz difusa en porcentaje"></div>
+            </div>
+            <div class="control">
+              <label for="s-r">Carga conectada al panel, R <span class="und" id="u-r">Ω</span></label>
+              <div class="par"><input type="range" id="s-r" min="0" max="100" step="1" value="50"><output id="o-r" class="res-r" aria-live="off"></output></div>
+              <div class="filtros" id="op-rapidos" role="group" aria-label="Puntos de operación">
+                <button type="button" class="filtro" data-op="cc" aria-pressed="false">Cortocircuito (amperímetro)</button>
+                <button type="button" class="filtro" data-op="ca" aria-pressed="false">Circuito abierto (voltímetro)</button>
+                <button type="button" class="filtro" data-op="mpp" aria-pressed="true">Máxima potencia</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <details class="pasos" id="det-placa">
+          <summary>Datos de la placa (puedes corregirlos)</summary>
+          <div class="placa-grid">
+            <label for="p-voc">Voc, voltaje de circuito abierto <span class="und">V</span><input type="number" id="p-voc" step="0.1" min="1"></label>
+            <label for="p-isc">Isc, corriente de cortocircuito <span class="und">A</span><input type="number" id="p-isc" step="0.01" min="0.1"></label>
+            <label for="p-vmp">Vmp, voltaje de máxima potencia <span class="und">V</span><input type="number" id="p-vmp" step="0.1" min="1"></label>
+            <label for="p-imp">Imp, corriente de máxima potencia <span class="und">A</span><input type="number" id="p-imp" step="0.01" min="0.1"></label>
+          </div>
+          <p class="nota-placa" id="nota-placa"></p>
+          <div class="botones"><button type="button" class="filtro" id="p-reset">Volver a lo que leí de la etiqueta</button></div>
+        </details>
+        <p class="aviso" style="margin:4px 0 0">Los valores iniciales de altura del sol, luz y carga son de ejemplo para explorar el modelo. No son mediciones de tu experimento.</p>
       </div>
 
       <article class="panel foto" id="foto" style="margin-top:20px" aria-labelledby="t-foto">
         <div class="cab"><div><h3 id="t-foto">¿Cómo se convierte la luz en electricidad?</h3>
           <p class="desc">Dentro de cada celda ocurre el efecto fotovoltaico, que nace del efecto fotoeléctrico: un fotón (una partícula de luz) con suficiente energía le arranca un electrón a un átomo. Esta animación usa los mismos controles de arriba: si cambias el ángulo, la intensidad o la carga, cambia lo que ves.</p></div></div>
-        <div class="foto-controles">
-          <div>
-            <span class="rot" id="r-luz" style="font-size:.88rem;font-weight:600;color:var(--azul-marino)">Tipo de luz</span>
-            <div class="segmentado sol-seg" role="group" aria-labelledby="r-luz" id="seg-luz">
+        <div class="foto-ctrl">
+          <div class="foto-c foto-c-luz">
+            <div class="foto-c-cab"><span class="rot" id="r-luz">Tipo de luz</span><output id="o-nm" class="foto-out" for="s-nm"></output></div>
+            <div class="espectro">
+              <input type="range" id="s-nm" min="380" max="1500" step="5" value="550" aria-labelledby="r-luz" aria-describedby="o-nm">
+              <span class="esp-umbral" id="esp-umbral" aria-hidden="true"><i></i><b></b></span>
+            </div>
+            <div class="esp-escala" aria-hidden="true"><span>380 nm</span><span>Luz visible</span><span>Infrarrojo</span><span>1500 nm</span></div>
+            <div class="segmentado sol-seg luz-seg" role="group" aria-labelledby="r-luz" id="seg-luz">
               <button type="button" data-luz="sol" aria-pressed="true">Sol (todos los colores)</button>
               <button type="button" data-luz="azul" aria-pressed="false">Azul · 450 nm</button>
               <button type="button" data-luz="roja" aria-pressed="false">Roja · 650 nm</button>
               <button type="button" data-luz="ir" aria-pressed="false">Infrarroja · 1400 nm</button>
             </div>
           </div>
-          <button type="button" class="btn-foto" id="foto-play" aria-pressed="true">⏸ Pausar</button>
+          <div class="foto-c foto-c-int">
+            <div class="foto-c-cab"><label for="s-g2" id="r-int">Intensidad de la luz, G</label><output id="o-g2" class="foto-out" for="s-g2"></output></div>
+            <input type="range" id="s-g2" class="rango-sol" min="100" max="1000" step="10" value="1000">
+            <div class="llega">
+              <div class="llega-cab"><span>Luz que llega a la celda <span class="sello calculo">Cálculo</span></span><b id="o-llega"></b></div>
+              <div class="llega-barra" aria-hidden="true"><i id="o-llega-bar"></i></div>
+              <p class="llega-nota">Es la misma luz directa G de los controles de arriba, ya con el ángulo y la luz difusa.</p>
+            </div>
+            <button type="button" class="btn-foto" id="foto-play" aria-pressed="true">⏸ Pausar</button>
+          </div>
         </div>
-        <div class="foto-lienzo"><canvas id="c-foto" role="img" aria-label="Animación de una celda solar: fotones que llegan, electrones liberados que suben a la capa n, huecos que bajan a la capa p, y los electrones que viajan por el cable externo a través de la carga."></canvas></div>
+        <div class="foto-lienzo"><canvas id="c-foto" role="img" aria-label="Animación de una celda solar: fotones que llegan, electrones liberados que suben a la capa n y viajan por ella hasta el contacto frontal, huecos que bajan a la capa p, y los electrones que recorren el cable externo a través de la carga y regresan por el contacto trasero."></canvas></div>
         <ul class="foto-leyenda" aria-label="Leyenda de la animación">
           <li><i class="lg lg-ph"></i> Fotón (luz)</li>
           <li><i class="lg lg-e">−</i> Electrón</li>
           <li><i class="lg lg-h">+</i> Hueco (falta un electrón)</li>
           <li><i class="lg lg-q"></i> Calor</li>
+          <li><i class="lg lg-ion">+ −</i> Iones fijos de la unión</li>
+          <li><i class="lg lg-n">1</i> Pasos de abajo</li>
         </ul>
         <div class="eg">
           <div class="eg-tit"><strong>¿Le alcanza la energía al fotón?</strong> <span class="sello calculo">Cálculo</span></div>
@@ -243,10 +280,10 @@
         <div class="cab"><div><h3 id="t-iv">Curva corriente-voltaje y potencia</h3>
           <p class="desc">La curva azul muestra qué corriente puede dar el panel a cada voltaje. La curva ámbar es la potencia. El punto amarillo es lo que pasa con tu carga: donde la línea gris de la carga cruza la curva azul.</p></div></div>
         <ul class="leyenda">
-          <li><i style="background:#0F4DBC"></i>Corriente (A), eje izquierdo</li>
-          <li><i style="background:#C77D00"></i>Potencia (W), eje derecho</li>
-          <li><i style="background:#8A97AD"></i>Línea de la carga, I = V ÷ R</li>
-          <li><i style="background:#FFC22E;box-shadow:0 0 0 2px #0B2A5B inset"></i>Tu punto de operación</li>
+          <li><i style="background:var(--g-corriente)"></i>Corriente (A), eje izquierdo</li>
+          <li><i style="background:var(--g-potencia)"></i>Potencia (W), eje derecho</li>
+          <li><i style="background:var(--g-carga)"></i>Línea de la carga, I = V ÷ R</li>
+          <li><i style="background:#FFC22E;box-shadow:0 0 0 2px var(--g-punto) inset"></i>Tu punto de operación</li>
         </ul>
         <div class="lienzo" style="height:340px"><canvas id="g-iv" role="img" aria-label="Curva de corriente contra voltaje y de potencia contra voltaje del panel"></canvas></div>
         <p class="fuente"><span class="sello calculo">Cálculo</span> Modelo de diodo simplificado ajustado con Voc, Isc, Vmp e Imp de la placa: I = g·Isc − I₀·(e<sup>V/a</sup> − 1). La luz solo escala la corriente; el voltaje de circuito abierto cambia con el logaritmo de la luz.</p>
@@ -299,7 +336,8 @@
 <script>(function(){var n=document.querySelector(".modulos"),a=n&&n.querySelector("[aria-current]");if(n&&a&&n.scrollWidth>n.clientWidth){n.scrollLeft=a.offsetLeft-(n.clientWidth-a.offsetWidth)/2;}})();</script>
 <script>(function(){var b=document.querySelector(".arriba");if(!b)return;function f(){b.classList.toggle("visible",scrollY>innerHeight*0.8);}addEventListener("scroll",f,{passive:true});f();})();</script>
 <script src="js/vendor/chart.umd.min.js"></script>
-<script src="js/celda-anim.js?v=20261112"></script>
-  <script src="js/solar.js?v=20261112"></script>
+<script src="js/tema.js?v=20261117"></script>
+<script src="js/celda-anim.js?v=20261117"></script>
+<script src="js/solar.js?v=20261117"></script>
 </body>
 </html>
